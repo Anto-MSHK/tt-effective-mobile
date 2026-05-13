@@ -14,5 +14,6 @@ const pipeline = {
 export const redis = {
   publish: jest.fn().mockResolvedValue(1),
   pipeline: jest.fn().mockReturnValue(pipeline),
+  ping: jest.fn().mockResolvedValue('PONG'),
   quit: jest.fn().mockResolvedValue('OK'),
 };

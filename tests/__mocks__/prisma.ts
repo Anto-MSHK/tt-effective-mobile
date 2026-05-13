@@ -14,9 +14,10 @@ const prismaMock = {
   },
   auditLog: {
     findMany: jest.fn(),
-    create: jest.fn(),
+    create: jest.fn().mockResolvedValue({ id: 'audit-1' }),
     count: jest.fn(),
   },
+  $queryRaw: jest.fn().mockResolvedValue([1]),
   $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
   $disconnect: jest.fn().mockResolvedValue(undefined),
 };
