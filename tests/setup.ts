@@ -1,0 +1,11 @@
+process.env.NODE_ENV = 'test';
+process.env.DATABASE_URL = 'postgresql://app:secret@localhost:5432/userservice_test';
+process.env.JWT_SECRET = 'test-secret-key-at-least-32-characters-long!!';
+process.env.ACCESS_TOKEN_TTL = '900';
+process.env.REFRESH_TOKEN_TTL = '604800';
+process.env.BCRYPT_ROUNDS = '10';
+process.env.REDIS_URL = 'redis://localhost:6379';
+process.env.RATE_LIMIT_MAX = '5';
+process.env.RATE_LIMIT_WINDOW_MS = '900000';
+process.env.CORS_ORIGIN = '*';
+process.env.PORT = '3001';
