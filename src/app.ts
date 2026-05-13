@@ -9,6 +9,7 @@ import { buildSwaggerSpec } from '@/config/swagger';
 import { errorHandler } from '@/middlewares/error-handler';
 import { createRateLimiter } from '@/middlewares/rate-limiter';
 import { requestId } from '@/middlewares/request-id';
+import { AppError } from '@/utils/app-error';
 import { auditRouter } from '@/modules/audit/audit.router';
 import { authRouter } from '@/modules/auth/auth.router';
 import { healthRouter } from '@/modules/health/health.router';
@@ -33,7 +34,7 @@ export function createApp(): Application {
   );
 
   app.use(requestId);
-  app.use(express.json());
+  app.use(express.json({ limit: '100kb' }));
 
   app.use('/auth', createRateLimiter(), authRouter);
   app.use('/users', usersRouter);
@@ -48,6 +49,10 @@ export function createApp(): Application {
     const swaggerSpec = buildSwaggerSpec();
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   }
+
+  app.use((_req, _res, next) => {
+    next(new AppError(404, 'NOT_FOUND', 'Route not found'));
+  });
 
   app.use(errorHandler);
 

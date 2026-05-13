@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { prisma } from '@/db/prisma';
 import { authenticate } from '@/middlewares/authenticate';
 import { authorize } from '@/middlewares/authorize';
+import { validateUuid } from '@/middlewares/validate-uuid';
 import { auditLog } from '@/modules/audit/audit.middleware';
 
 import { UsersController } from './users.controller';
@@ -21,10 +22,10 @@ usersRouter.get('/', authenticate, authorize('admin'), (req, res, next) =>
   usersController.list(req, res).catch(next),
 );
 
-usersRouter.get('/:id', authenticate, authorize('self', 'admin'), (req, res, next) =>
+usersRouter.get('/:id', validateUuid('id'), authenticate, authorize('self', 'admin'), (req, res, next) =>
   usersController.getById(req, res).catch(next),
 );
 
-usersRouter.patch('/:id/block', authenticate, authorize('self', 'admin'), (req, res, next) =>
+usersRouter.patch('/:id/block', validateUuid('id'), authenticate, authorize('self', 'admin'), (req, res, next) =>
   usersController.block(req, res).catch(next),
 );

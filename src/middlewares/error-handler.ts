@@ -42,6 +42,14 @@ export function errorHandler(
     return;
   }
 
+  if (err instanceof Error && 'type' in err && (err as Error & { type: string }).type === 'entity.too.large') {
+    log.warn({ err }, 'Payload too large');
+    res.status(413).json({
+      error: { code: 'PAYLOAD_TOO_LARGE', message: 'Request body too large', requestId },
+    });
+    return;
+  }
+
   log.error({ err }, 'Unhandled error');
   res.status(500).json({
     error: { code: 'INTERNAL_ERROR', message: 'Internal server error', requestId },

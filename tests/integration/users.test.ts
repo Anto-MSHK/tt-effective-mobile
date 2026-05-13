@@ -9,9 +9,14 @@ import { signAccess } from '@/utils/token';
 
 const app = createApp();
 
+const USER_ID = '11111111-1111-4111-a111-111111111111';
+const ADMIN_ID = '22222222-2222-4222-a222-222222222222';
+const OTHER_USER_ID = '33333333-3333-4333-a333-333333333333';
+const USER_ID_2 = '44444444-4444-4444-a444-444444444444';
+
 function makeDbUser(overrides = {}) {
   return {
-    id: 'uuid-user-1',
+    id: USER_ID,
     fullName: 'Bob Builder',
     email: 'bob@example.com',
     role: 'user' as const,
@@ -23,8 +28,8 @@ function makeDbUser(overrides = {}) {
   };
 }
 
-const userToken = signAccess('uuid-user-1', 'user');
-const adminToken = signAccess('uuid-admin-1', 'admin');
+const userToken = signAccess(USER_ID, 'user');
+const adminToken = signAccess(ADMIN_ID, 'admin');
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -35,11 +40,11 @@ describe('GET /users/:id', () => {
     prisma.user.findUnique.mockResolvedValue(makeDbUser());
 
     const res = await request(app)
-      .get('/users/uuid-user-1')
+      .get(`/users/${USER_ID}`)
       .set('Authorization', `Bearer ${userToken}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.id).toBe('uuid-user-1');
+    expect(res.body.id).toBe(USER_ID);
     expect(res.body).not.toHaveProperty('passwordHash');
   });
 
@@ -47,7 +52,7 @@ describe('GET /users/:id', () => {
     prisma.user.findUnique.mockResolvedValue(makeDbUser());
 
     const res = await request(app)
-      .get('/users/uuid-user-1')
+      .get(`/users/${USER_ID}`)
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
@@ -55,7 +60,7 @@ describe('GET /users/:id', () => {
 
   it('403 — user accesses another user\'s profile', async () => {
     const res = await request(app)
-      .get('/users/uuid-other-user')
+      .get(`/users/${OTHER_USER_ID}`)
       .set('Authorization', `Bearer ${userToken}`);
 
     expect(res.status).toBe(403);
@@ -66,7 +71,7 @@ describe('GET /users/:id', () => {
     prisma.user.findUnique.mockResolvedValue(null);
 
     const res = await request(app)
-      .get('/users/uuid-user-1')
+      .get(`/users/${USER_ID}`)
       .set('Authorization', `Bearer ${userToken}`);
 
     expect(res.status).toBe(404);
@@ -74,14 +79,14 @@ describe('GET /users/:id', () => {
   });
 
   it('401 — no token', async () => {
-    const res = await request(app).get('/users/uuid-user-1');
+    const res = await request(app).get(`/users/${USER_ID}`);
     expect(res.status).toBe(401);
   });
 });
 
 describe('GET /users (list)', () => {
   it('200 — admin gets paginated list', async () => {
-    const items = [makeDbUser(), makeDbUser({ id: 'uuid-user-2', email: 'c@c.com' })];
+    const items = [makeDbUser(), makeDbUser({ id: USER_ID_2, email: 'c@c.com' })];
     prisma.user.count.mockResolvedValue(2);
     prisma.user.findMany.mockResolvedValue(items);
 
@@ -138,7 +143,7 @@ describe('PATCH /users/:id/block', () => {
     prisma.user.update.mockResolvedValue(blocked);
 
     const res = await request(app)
-      .patch('/users/uuid-user-1/block')
+      .patch(`/users/${USER_ID}/block`)
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
@@ -152,7 +157,7 @@ describe('PATCH /users/:id/block', () => {
     prisma.user.update.mockResolvedValue(blocked);
 
     const res = await request(app)
-      .patch('/users/uuid-user-1/block')
+      .patch(`/users/${USER_ID}/block`)
       .set('Authorization', `Bearer ${userToken}`);
 
     expect(res.status).toBe(200);
@@ -160,7 +165,7 @@ describe('PATCH /users/:id/block', () => {
 
   it('403 — user cannot block another user', async () => {
     const res = await request(app)
-      .patch('/users/uuid-other/block')
+      .patch(`/users/${OTHER_USER_ID}/block`)
       .set('Authorization', `Bearer ${userToken}`);
 
     expect(res.status).toBe(403);
@@ -170,14 +175,14 @@ describe('PATCH /users/:id/block', () => {
     prisma.user.findUnique.mockResolvedValue(null);
 
     const res = await request(app)
-      .patch('/users/uuid-user-1/block')
+      .patch(`/users/${USER_ID}/block`)
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(404);
   });
 
   it('401 — no token', async () => {
-    const res = await request(app).patch('/users/uuid-user-1/block');
+    const res = await request(app).patch(`/users/${USER_ID}/block`);
     expect(res.status).toBe(401);
   });
 });
